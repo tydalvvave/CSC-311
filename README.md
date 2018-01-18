@@ -1,3 +1,2 @@
 # CSC 311
-Systems Software
-Cornell College
+Systems Software | Cornell College
