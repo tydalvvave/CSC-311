@@ -1,0 +1,5 @@
+/* getfpn.c
+   Get floating point number */
+double getfpn(int modulus) {
+  return ((double) linearCongruentialGenerator())/modulus);
+};
