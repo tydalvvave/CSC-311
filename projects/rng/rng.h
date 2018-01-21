@@ -23,7 +23,7 @@ int linearCongruentialGenerator(int previousValue,
 
    Description: Gets a floating point number
 
-   Returns an double.
+   Returns a double.
  **/
 double getfpn(int previousValue,
 	      int multiplier,
