@@ -15,7 +15,7 @@ int main(int argc, char** argv) {
   }
 
   char buf[256];
-  int len = 75;
+  int len = 1000;
   ssize_t op = read(fd, &buf, len);
   if (op == -1) {
     printf("%s\n\n", strerror(errno));
@@ -23,9 +23,8 @@ int main(int argc, char** argv) {
 
   printf("%s\n", buf);
 
-  const char *buf2 = "Sie werde hier.";
-  ssize_t nr = write(fd, &buf2, strlen(buf2));
-  
+  char *buf2 = "Sie werde hier.\n";
+  ssize_t nr = write(fd, buf2, strlen(buf2));
   if (nr == -1) {
     printf("%s\n\n", strerror(errno));
   }
