@@ -13,33 +13,56 @@ typedef struct Ticket {
   int fifth;
   int powerball;
   int powerplay;
-  char date[64];
+  char drawDate[10];
 } Ticket;
 
-struct Ticket winningTickets[WINNING_TICKETS];
-
-void createTicket(char *line)
+Ticket createTicket(char *line, Ticket ticket)
 {
-  char date[10];
-  char first[2];
-  char second[2];
-  char third[2];
-  char fourth[2];
-  char fifth[2];
-  char powerball[2];
-  char powerplay[2];
+  char drawDate[10];
+  int first;
+  int second;
+  int third;
+  int fourth;
+  int fifth;
+  int powerball;
+  int powerplay;
   
-  sscanf(line, "%s" "%s" "%s" "%s" "%s" "%s" "%s" "%s",
-        date, first, second, third, fourth, fifth, powerball, powerplay);
+  sscanf(line, "%s" "%d" "%d" "%d" "%d" "%d" "%d" "%d",
+        drawDate, &first, &second, &third, &fourth, &fifth, &powerball, &powerplay);
+  /**
+  printf("%s %d %d %d %d %d %d %d\n",
+        drawDate, first, second, third, fourth, fifth, powerball, powerplay);
+  */
   
-  printf("%s %s %s %s %s %s %s %s\n",
-	date, first, second, third, fourth, fifth, powerball, powerplay);
+  strcpy(ticket.drawDate, drawDate);
+  ticket.first = first;
+  ticket.second = second;
+  ticket.third = third;
+  ticket.fourth = fourth;
+  ticket.fifth = fifth;
+  ticket.powerball = powerball;
+  ticket.powerplay = powerplay;
+
+  /**
+  printf("%s %d %d %d %d %d %d %d\n",
+        ticket.drawDate, ticket.first, ticket.second,
+	 ticket.third, ticket.fourth, ticket.fifth,
+	 ticket.powerball, ticket.powerplay);
+  */
+
+  return ticket;
 }
 
 int main(int argc, char** argv)
 {
-  printf("\nWinning Numbers (Iowa Powerball)");
-  printf("\n--------------------------------\n");
+  struct Ticket *winningTickets;
+  winningTickets = calloc(WINNING_TICKETS, sizeof(struct Ticket));
+  if (!winningTickets)
+  {
+    perror("calloc");
+    return -1;
+  }
+  
   char *line = NULL;
   size_t lengthOfBuffer = 0;
   ssize_t numberOfCharactersRead;
@@ -54,9 +77,11 @@ int main(int argc, char** argv)
   }
   else
   {
-    createTicket(line);
+    winningTickets[0] = createTicket(line, winningTickets[0]);
+    winningTickets[0].ticketID = 0;
   }
 
+  int i = 1;
   while (numberOfCharactersRead > 0)
   {
     numberOfCharactersRead = getline(&line, &lengthOfBuffer, inputStream);
@@ -67,14 +92,31 @@ int main(int argc, char** argv)
     }
     else
     {
-      createTicket(line);
+      winningTickets[i] = createTicket(line, winningTickets[i]);
+      winningTickets[i].ticketID = i;
+      i++;
     }
   }
-  printf("--------------------------------\n\n");
   
   fclose(inputStream);
   
   free(line);
 
+  
+  for (int i = 0; i < 20; i++)
+  {
+    printf("----------------------------------------------\n");
+    printf("Ticket ID: %d\n", winningTickets[i].ticketID);
+    printf("Draw Date: %s\n", winningTickets[i].drawDate);
+    printf("Numbers 1 - 5: %d %d %d %d %d\n", winningTickets[i].first,
+	   winningTickets[i].second, winningTickets[i].third,
+	   winningTickets[i].fourth, winningTickets[i].fifth);
+    printf("Powerball: %d\n", winningTickets[i].powerball);
+    printf("Power Play: %d\n", winningTickets[i].powerplay);
+    
+  }
+ 
+  free(winningTickets);
+  
   return 0;  
 }
