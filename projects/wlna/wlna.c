@@ -259,7 +259,14 @@ void cdf(int* numberCount, int whichBall)
 	     cumulativeCount / (double) totalPowerballCount);
     }
   }
-} // cdf()
+} // cdf(int*, int)
+
+double getRand()
+{ return (rand() / (double) RAND_MAX);
+} // getRand()
+
+Ticket generateTicket()
+{} // generateTicket()
 
 int main(int argc, char** argv)
 {
@@ -354,8 +361,8 @@ int main(int argc, char** argv)
   printf("\n");
   cdf(ballCount, BALL_RANGE);
   printf("\n");
-  cdf(powerballCount, POWERBALL_RANGE);  
-
+  cdf(powerballCount, POWERBALL_RANGE);
+  
   free(line);
   free(winningTickets);
   free(ballCount);
@@ -365,3 +372,12 @@ int main(int argc, char** argv)
   return 0;
   
 } // main(int, char**)
+
+/** TO DO
+
+    - Allocate memory for probability and cumulative distributions
+      in order to use the data
+    - Set seed for random number generator
+    - Generate and display new lottery tickets
+
+ */
