@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #define WINNING_TICKETS 2110
 #define BALL_RANGE 69
@@ -33,10 +34,10 @@ Ticket createTicket(char *line, Ticket ticket)
   int fifth;
   int powerball;
   int powerplay;
-  
+
   sscanf(line, "%s" "%d" "%d" "%d" "%d" "%d" "%d" "%d",
         drawDate, &first, &second, &third, &fourth, &fifth, &powerball, &powerplay);
-  
+
   strcpy(ticket.drawDate, drawDate);
   ticket.first = first;
   ticket.second = second;
@@ -45,7 +46,7 @@ Ticket createTicket(char *line, Ticket ticket)
   ticket.fifth = fifth;
   ticket.powerball = powerball;
   ticket.powerplay = powerplay;
-  
+
   return ticket;
 } // createTicket
 
@@ -61,32 +62,31 @@ void printTickets(struct Ticket *tickets, int numberOfTickets)
 	   tickets[i].fourth, tickets[i].fifth);
     printf("Powerball: %d\n", tickets[i].powerball);
     printf("Power Play: %d\n", tickets[i].powerplay);
-    
+
   }
 } // printTickets(struct Ticket *, int)
 
-int *getBallCount(struct Ticket *tickets, int *count)
-{  
+int* getBallCount(struct Ticket *tickets, int *count)
+{
   for (int i = 0; i < WINNING_TICKETS; i++)
   {
     for (int j = 1; j < 70; j++)
     {
       if (tickets[i].first == j ||
-	  tickets[i].second == j ||
-	  tickets[i].third == j ||
-	  tickets[i].fourth == j ||
-	  tickets[i].fifth == j)
+	        tickets[i].second == j ||
+	        tickets[i].third == j ||
+	        tickets[i].fourth == j ||
+	        tickets[i].fifth == j)
       {
-	count[j-1]++;
-	totalBallCount++;
+	        count[j-1]++;
+	        totalBallCount++;
       }
     }
   }
-  
   return count;
 } // getBallCount(struct Ticket *, int *)
 
-int *getPowerballCount(struct Ticket *tickets, int *count)
+int* getPowerballCount(struct Ticket *tickets, int *count)
 {
   for (int i = 0; i < WINNING_TICKETS; i++)
   {
@@ -94,48 +94,13 @@ int *getPowerballCount(struct Ticket *tickets, int *count)
     {
       if (tickets[i].powerball == j)
       {
-	count[j-1]++;
-	totalPowerballCount++;
+	       count[j-1]++;
+	       totalPowerballCount++;
       }
     }
   }
-
   return count;
 } // getPowerballCount(struct Ticket *, int *)
-
-int *getPowerPlayCount(struct Ticket *tickets, int *count)
-{
-  for (int i = 0; i < WINNING_TICKETS; i++)
-  {
-      if (tickets[i].powerplay == 2)
-      {
-	count[0]++;
-	totalPowerPlayCount++;
-      }
-      else if (tickets[i].powerplay == 3)
-      {
-	count[1]++;
-	totalPowerPlayCount++;
-      }
-      else if (tickets[i].powerplay == 4)
-      {
-	count[2]++;
-	totalPowerPlayCount++;
-      }
-      else if (tickets[i].powerplay == 5)
-      {
-	count[3]++;
-	totalPowerPlayCount++;
-      }
-      else if (tickets[i].powerplay == 10)
-      {
-	count[4]++;
-	totalPowerPlayCount++;
-      }
-    }
-
-  return count;
-} // getPowerPlayCount(struct Ticket *, int *)
 
 void printCount(int* numberCount, int whichBall)
 {
@@ -173,100 +138,138 @@ void printCount(int* numberCount, int whichBall)
       else if (i == 2) { pwrply = 4; }
       else if (i == 3) { pwrply = 5; }
       else if (i == 4) { pwrply = 10; }
-      
+
       printf("%2d => %d\n", pwrply, numberCount[i]);
     }
   }
 } // printCount(int*, int)
 
-
-void pdf(int* numberCount, int whichBall)
+double* pdf(int* numberCount, int whichBall, double* probDist)
 {
   if (whichBall == BALL_RANGE)
   {
-    printf("White Ball Probability Distrubution\n");
-    printf("-----------------------------------\n");
-
     for (int i = 0; i < whichBall; i++)
     {
-      printf("%2d => %.9f\n", i + 1,
-	       (double) numberCount[i] / (double) totalBallCount);
+      probDist[i] = (double) numberCount[i] / (double) totalBallCount;
     }
   }
   else if (whichBall == POWERBALL_RANGE)
   {
-    printf("Powerball Probability Distrubution\n");
-    printf("----------------------------------\n");
-
     for (int i = 0; i < whichBall; i++)
     {
-      printf("%2d => %.9f\n", i + 1,
-	     (double) numberCount[i] / (double) totalPowerballCount);
+      probDist[i] = (double) numberCount[i] / (double) totalPowerballCount;
     }
   }
-  else if (whichBall == POWERPLAY_RANGE)
-  {    
-    printf("Power Play Probability Distrubution\n");
-    printf("-----------------------------------\n");
 
-    int pwrply = 0;
-
-    for (int i = 0; i < whichBall; i++)
-    {
-      if (i == 0)      { pwrply = 2; }
-      else if (i == 1) { pwrply = 3; }
-      else if (i == 2) { pwrply = 4; }
-      else if (i == 3) { pwrply = 5; }
-      else if (i == 4) { pwrply = 10; }
-
-      printf("%2d => %.9f\n", pwrply,
-	     (double) numberCount[i] / (double) totalPowerPlayCount);
-    }
-  }
+  return probDist;
 } // pdf(int*, int)
 
-void cdf(int* numberCount, int whichBall)
+double* cdf(int* numberCount, int whichBall, double* probDist)
 {
   if (whichBall == BALL_RANGE)
   {
-    printf("White Ball Cumulative Distrubution\n");
-    printf("----------------------------------\n");
-
     double cumulativeCount = numberCount[0];
-    printf("%2d => %.9f\n", 1,
-	       cumulativeCount / (double) totalBallCount);
-    
+    probDist[0] = cumulativeCount / (double) totalBallCount;
+
     for (int i = 1; i < whichBall; i++)
     {
       cumulativeCount += numberCount[i];
-      printf("%2d => %.9f\n", i + 1,
-	       cumulativeCount / (double) totalBallCount);
+      probDist[i] = cumulativeCount / (double) totalBallCount;
     }
   }
   else if (whichBall == POWERBALL_RANGE)
   {
-    printf("Powerball Cumulative Distrubution\n");
-    printf("---------------------------------\n");
-
     double cumulativeCount = numberCount[0];
-    printf("%2d => %.9f\n", 1,
-	   cumulativeCount / (double) totalPowerballCount);
-    
+    probDist[0] = cumulativeCount / (double) totalPowerballCount;
+
     for (int i = 1; i < whichBall; i++)
     {
       cumulativeCount += numberCount[i];
-      printf("%2d => %.9f\n", i + 1,
-	     cumulativeCount / (double) totalPowerballCount);
+      probDist[i] = cumulativeCount / (double) totalPowerballCount;
     }
   }
+
+  return probDist;
 } // cdf(int*, int)
+
+void printDist(double* probDist, int whichBall)
+{
+    if (whichBall == BALL_RANGE)
+    {
+      for (int i = 0; i < whichBall; i++)
+      {
+        printf("%2d => %.9f (%.2f%%)\n", i + 1, probDist[i], probDist[i]*100);
+      }
+    }
+    else if (whichBall == POWERBALL_RANGE)
+    {
+      for (int i = 0; i < whichBall; i++)
+      {
+        printf("%2d => %.9f (%.2f%%)\n", i + 1, probDist[i], probDist[i]*100);
+      }
+    }
+} // printDist()
 
 double getRand()
 { return (rand() / (double) RAND_MAX);
 } // getRand()
 
-Ticket generateTicket()
-{} // generateTicket()
+int* generateTicket(double* probDist, int* genBallPick)
+{
+  for (int clear = 0; clear < 5; clear++)
+  {
+    genBallPick[clear] = 0;
+  }
+
+  int i = 0;
+  LOOP:while (i < 5)
+  {
+    double genRand = getRand(); // 0.52
+
+    int j = 1;
+    while (j < BALL_RANGE)
+    {
+      if (probDist[j-1] > genRand)
+      {
+        break;
+      }
+      j++;
+    }
+
+    if (i == 0)
+    {
+      genBallPick[0] = j;
+    }
+    else
+    {
+      for (int k = 0; k < i; k++)
+      {
+        if (genBallPick[k+1] == genBallPick[k])
+        {
+          goto LOOP;
+        }
+      }
+    }
+    genBallPick[i] = j;
+    i++;
+  }
+
+  int a, b, c;
+  for (a = 1; a < 5; a++)
+  {
+    c = genBallPick[a];
+    b = a - 1;
+
+    while (b >= 0 && genBallPick[b] > c)
+    {
+      genBallPick[b+1] = genBallPick[b];
+      b = b - 1;
+    }
+    genBallPick[b+1] = c;
+  }
+
+  return genBallPick;
+} // generateTicket()
 
 int main(int argc, char** argv)
 {
@@ -294,9 +297,25 @@ int main(int argc, char** argv)
     return -1;
   }
 
-  int *powerPlayCount;
-  powerPlayCount = calloc(POWERPLAY_RANGE, sizeof(int));
-  if (!powerPlayCount)
+  double *ballDist;
+  ballDist = calloc(BALL_RANGE, sizeof(double));
+  if (!ballDist)
+  {
+    perror("calloc");
+    return -1;
+  }
+
+  double *powerballDist;
+  powerballDist = calloc(POWERBALL_RANGE, sizeof(double));
+  if (!powerballDist)
+  {
+    perror("calloc");
+    return -1;
+  }
+
+  int* genBallPick;
+  genBallPick = calloc(5, sizeof(int));
+  if (!genBallPick)
   {
     perror("calloc");
     return -1;
@@ -307,7 +326,7 @@ int main(int argc, char** argv)
   ssize_t numberOfCharactersRead;
 
   FILE * inputStream = fopen("iowa-powerball.txt", "r");
-  
+
   numberOfCharactersRead = getline(&line, &lengthOfBuffer, inputStream);
 
   if (numberOfCharactersRead == -1)
@@ -320,7 +339,7 @@ int main(int argc, char** argv)
     winningTickets[0].ticketID = 0;
   }
 
-  int i = 1;
+  int h = 1;
   while (numberOfCharactersRead > 0)
   {
     numberOfCharactersRead = getline(&line, &lengthOfBuffer, inputStream);
@@ -331,46 +350,68 @@ int main(int argc, char** argv)
     }
     else
     {
-      winningTickets[i] = createTicket(line, winningTickets[i]);
-      winningTickets[i].ticketID = i;
-      i++;
+      winningTickets[h] = createTicket(line, winningTickets[h]);
+      winningTickets[h].ticketID = h;
+      h++;
     }
   }
-  
+
   fclose(inputStream);
 
+  srand(time(NULL));
+
   //printTickets(winningTickets, WINNING_TICKETS);
+  //printf("\n");
 
-  printf("\n");
-  printCount(getBallCount(winningTickets, ballCount), BALL_RANGE);
-  printf("\n");
-  printCount(getPowerballCount(winningTickets, powerballCount), POWERBALL_RANGE);
-  printf("\n");
-  printCount(getPowerPlayCount(winningTickets, powerPlayCount), POWERPLAY_RANGE);
+  getBallCount(winningTickets, ballCount);
+  getPowerballCount(winningTickets, powerballCount);
 
-  //printf("Total Ball Count: %d\n", totalBallCount);
-  //printf("Total Powerball Count: %d\n", totalPowerballCount);
+  /*
+  printf("\nWHITE BALL PROBABILITY DISTRIBUTION");
+  printf("\n-----------------------------------\n");
+  printDist(pdf(ballCount, BALL_RANGE, ballDist), BALL_RANGE);
+  printf("\nPOWERBALL PROBABILITY DISTRIBUTION");
+  printf("\n----------------------------------\n");
+  printDist(pdf(powerballCount, POWERBALL_RANGE, powerballDist), POWERBALL_RANGE);
 
+  printf("\nWHITE BALL CUMULATIVE DISTRIBUTION");
+  printf("\n----------------------------------\n");
+  printDist(cdf(ballCount, BALL_RANGE, ballDist), BALL_RANGE);
+  printf("\nPOWERBALL CUMULATIVE DISTRIBUTION");
+  printf("\n---------------------------------\n");
+  printDist(cdf(powerballCount, POWERBALL_RANGE, powerballDist), POWERBALL_RANGE);
   printf("\n");
-  pdf(ballCount, BALL_RANGE);
-  printf("\n");
-  pdf(powerballCount, POWERBALL_RANGE);
-  printf("\n");
-  pdf(powerPlayCount, POWERPLAY_RANGE);
+  */
 
+  pdf(ballCount, BALL_RANGE, ballDist);
+  pdf(powerballCount, POWERBALL_RANGE, powerballDist);
+  cdf(ballCount, BALL_RANGE, ballDist);
+  cdf(powerballCount, POWERBALL_RANGE, powerballDist);
+
+  printf("\nGENERATED TICKET(S)\n");
+  printf("-------------------\n");
+  for (int i = 0; i < 20; i++)
+  {
+    generateTicket(ballDist, genBallPick);
+
+    for (int i = 0; i < 5; i++)
+    {
+      printf("%3d ", genBallPick[i]);
+    }
+    printf("\n");
+  }
   printf("\n");
-  cdf(ballCount, BALL_RANGE);
-  printf("\n");
-  cdf(powerballCount, POWERBALL_RANGE);
-  
+
   free(line);
   free(winningTickets);
   free(ballCount);
   free(powerballCount);
-  free(powerPlayCount);
-  
+  free(ballDist);
+  free(powerballDist);
+  free(genBallPick);
+
   return 0;
-  
+
 } // main(int, char**)
 
 /** TO DO
