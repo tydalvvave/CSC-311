@@ -3,14 +3,12 @@
 #include <string.h>
 #include <time.h>
 
-#define WINNING_TICKETS 2110
+#define WINNING_TICKETS 2112
 #define BALL_RANGE 69
 #define POWERBALL_RANGE 29
-#define POWERPLAY_RANGE 5
 
 int totalBallCount = 0;
 int totalPowerballCount = 0;
-int totalPowerPlayCount = 0;
 
 typedef struct Ticket {
   int ticketID;
@@ -124,24 +122,6 @@ void printCount(int* numberCount, int whichBall)
       printf("%2d => %d\n", i + 1, numberCount[i]);
     }
   }
-  else if (whichBall == POWERPLAY_RANGE)
-  {
-    printf("Power Play Frequency Chart\n");
-    printf("--------------------------\n");
-
-    int pwrply = 0;
-
-    for (int i = 0; i < whichBall; i++)
-    {
-      if (i == 0)      { pwrply = 2; }
-      else if (i == 1) { pwrply = 3; }
-      else if (i == 2) { pwrply = 4; }
-      else if (i == 3) { pwrply = 5; }
-      else if (i == 4) { pwrply = 10; }
-
-      printf("%2d => %d\n", pwrply, numberCount[i]);
-    }
-  }
 } // printCount(int*, int)
 
 double* pdf(int* numberCount, int whichBall, double* probDist)
@@ -214,7 +194,7 @@ double getRand()
 { return (rand() / (double) RAND_MAX);
 } // getRand()
 
-int* generateTicket(double* probDist, int* genBallPick)
+int* generateBalls(double* probDist, int* genBallPick)
 {
   for (int clear = 0; clear < 5; clear++)
   {
@@ -224,7 +204,7 @@ int* generateTicket(double* probDist, int* genBallPick)
   int i = 0;
   LOOP:while (i < 5)
   {
-    double genRand = getRand(); // 0.52
+    double genRand = getRand();
 
     int j = 1;
     while (j < BALL_RANGE)
@@ -242,15 +222,15 @@ int* generateTicket(double* probDist, int* genBallPick)
     }
     else
     {
-      for (int k = 0; k < i; k++)
+      for (int k = 1; k < 5; k++)
       {
-        if (genBallPick[k+1] == genBallPick[k])
+        if (genBallPick[k-1] == j)
         {
-          goto LOOP;
+           goto LOOP;
         }
       }
+      genBallPick[i] = j;
     }
-    genBallPick[i] = j;
     i++;
   }
 
@@ -269,7 +249,24 @@ int* generateTicket(double* probDist, int* genBallPick)
   }
 
   return genBallPick;
-} // generateTicket()
+} // generateBalls()
+
+int generatePowerball(double* probDist)
+{
+  double genRand = getRand();
+
+  int j = 1;
+  while(j < POWERBALL_RANGE)
+  {
+    if (probDist[j-1] > genRand)
+    {
+      break;
+    }
+    j++;
+  }
+
+  return j;
+}
 
 int main(int argc, char** argv)
 {
@@ -366,7 +363,7 @@ int main(int argc, char** argv)
   getBallCount(winningTickets, ballCount);
   getPowerballCount(winningTickets, powerballCount);
 
-  /*
+
   printf("\nWHITE BALL PROBABILITY DISTRIBUTION");
   printf("\n-----------------------------------\n");
   printDist(pdf(ballCount, BALL_RANGE, ballDist), BALL_RANGE);
@@ -381,26 +378,29 @@ int main(int argc, char** argv)
   printf("\n---------------------------------\n");
   printDist(cdf(powerballCount, POWERBALL_RANGE, powerballDist), POWERBALL_RANGE);
   printf("\n");
-  */
 
-  pdf(ballCount, BALL_RANGE, ballDist);
-  pdf(powerballCount, POWERBALL_RANGE, powerballDist);
-  cdf(ballCount, BALL_RANGE, ballDist);
-  cdf(powerballCount, POWERBALL_RANGE, powerballDist);
 
-  printf("\nGENERATED TICKET(S)\n");
-  printf("-------------------\n");
-  for (int i = 0; i < 20; i++)
+  //pdf(ballCount, BALL_RANGE, ballDist);
+  //pdf(powerballCount, POWERBALL_RANGE, powerballDist);
+  //cdf(ballCount, BALL_RANGE, ballDist);
+  //cdf(powerballCount, POWERBALL_RANGE, powerballDist);
+
+  printf("\nGENERATED TICKET(S)");
+  printf("\n-------------------");
+  printf("\nN1 N2 N3 N4 N5 | PB");
+  printf("\n-------------------\n");
+  for (int i = 0; i < 50; i++)
   {
-    generateTicket(ballDist, genBallPick);
+    generateBalls(ballDist, genBallPick);
+    int powerball = generatePowerball(powerballDist);
 
     for (int i = 0; i < 5; i++)
     {
-      printf("%3d ", genBallPick[i]);
+      printf("%02d ", genBallPick[i]);
     }
-    printf("\n");
+    printf("| %02d\n", powerball);
   }
-  printf("\n");
+  printf("-------------------\n");
 
   free(line);
   free(winningTickets);
